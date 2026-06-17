@@ -9,6 +9,7 @@ import { RegisterPage } from '@/features/auth/views/RegisterPage';
 import { MainLayout } from '@/components/layouts/ MainLayout';
 import { StockModule } from '@/features/stock/views/StockModule';
 import { RHModule } from '@/features/rh/views/RHModule';
+import { MaintenanceModule } from '@/features/maintenance/views/MaintenanceModule';
 // Pour simplifier, nous allons utiliser un composant lazy-loaded pour chaque module.
 // Nous allons créer un fichier d'index pour chaque module.
 
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       // Importation des routes des modules
       { path: 'stock/*', element: <StockModule /> },
       { path: 'rh/*', element: <RHModule /> },
+      { path: 'maintenance/*', element: <MaintenanceModule /> },
       // De la même manière pour les autres modules
     ],
   },
