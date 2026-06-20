@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Package, Users, Wrench, Building2 } from 'lucide-react';
+import { LayoutDashboard, Package, Users, Wrench, Building2, Settings } from 'lucide-react';
+
 
 const navItems = [
   { path: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -8,6 +9,9 @@ const navItems = [
   { path: '/rh', label: 'RH', icon: Users },
   { path: '/maintenance', label: 'Maintenance', icon: Wrench },
   { path: '/administration', label: 'Administration', icon: Building2 },
+  
+  { path: '/administration/modules', label: 'Modules', icon: Settings },
+  { path: '/maintenance/pieces', label: 'Pièces', icon: Package },
 ];
 
 interface SidebarProps {

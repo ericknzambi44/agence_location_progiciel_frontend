@@ -1,8 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { maintenanceService } from '../services/maintenance.services';
-import { InterventionCreation, AjoutPieceData } from '../types/intervention.types';
+import {
+  InterventionCreation,
+  AjoutPieceData,
+  PieceDetachee,
+  PieceCreation,
+} from '../types/intervention.types';
 
-// --- Interventions ---
+// ============================================================
+//  INTERVENTIONS
+// ============================================================
+
 export const useInterventions = () => {
   return useQuery({
     queryKey: ['maintenance', 'interventions'],
@@ -21,8 +29,10 @@ export const useIntervention = (id: string) => {
 export const useCreerIntervention = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: InterventionCreation) => maintenanceService.create(data).then(res => res.data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions'] }),
+    mutationFn: (data: InterventionCreation) =>
+      maintenanceService.create(data).then(res => res.data),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions'] }),
   });
 };
 
@@ -67,10 +77,66 @@ export const useCalculerCout = (id: string) => {
   });
 };
 
-// --- Pièces ---
+// ============================================================
+//  TECHNICIENS
+// ============================================================
+
+export const useTechniciens = () => {
+  return useQuery({
+    queryKey: ['maintenance', 'techniciens'],
+    queryFn: () => maintenanceService.getTechniciens().then(res => res.data),
+  });
+};
+
+// ============================================================
+//  PIÈCES DÉTACHÉES
+// ============================================================
+
 export const usePieces = () => {
   return useQuery({
     queryKey: ['maintenance', 'pieces'],
-    queryFn: () => maintenanceService.getAllPieces().then(res => res.data),
+    queryFn: () => maintenanceService.getPieces().then(res => res.data),
+  });
+};
+
+export const useCreerPiece = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PieceCreation) =>
+      maintenanceService.createPiece(data).then(res => res.data),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'pieces'] }),
+  });
+};
+
+export const useModifierPiece = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<PieceCreation> }) =>
+      maintenanceService.updatePiece(id, data).then(res => res.data),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'pieces'] }),
+  });
+};
+
+export const useSupprimerPiece = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => maintenanceService.deletePiece(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'pieces'] }),
+  });
+};
+
+
+export const useRetirerPiece = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ interventionId, pieceId }: { interventionId: string; pieceId: string }) =>
+      maintenanceService.retirerPiece(interventionId, pieceId),
+    onSuccess: (_, { interventionId }) => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions', interventionId] });
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions'] });
+    },
   });
 };
