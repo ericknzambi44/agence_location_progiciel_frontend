@@ -7,7 +7,7 @@ export const AdministrationModule = () => {
   return (
     <Routes>
       <Route index element={<AgenceList />} />
-      <Route path="nouveau" element={<AgenceCreate />} />
+      <Route path="nouvelle" element={<AgenceCreate />} />
       <Route path="modules" element={<ModuleList />} />
     </Routes>
   );

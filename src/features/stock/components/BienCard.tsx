@@ -9,7 +9,7 @@ interface BienCardProps {
 }
 
 /**
- * Carte présentant un bien avec son état coloré.
+ * Carte présentant un bien avec son état coloré et sa devise.
  * Utilisée dans la liste des biens.
  */
 export const BienCard = ({ bien }: BienCardProps) => {
@@ -19,6 +19,14 @@ export const BienCard = ({ bien }: BienCardProps) => {
     endommage: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     archive: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
   };
+
+  // Conversion robuste du prix en nombre
+  const prix = typeof bien.prix_unitaire_ht === 'string'
+    ? parseFloat(bien.prix_unitaire_ht)
+    : bien.prix_unitaire_ht;
+
+  // Devise par défaut si non définie
+  const devise = bien.devise || 'USD';
 
   return (
     <Link to={`/stock/${bien.id}`} className="block h-full">
@@ -33,7 +41,9 @@ export const BienCard = ({ bien }: BienCardProps) => {
         </CardHeader>
         <CardContent className="space-y-1">
           <p className="text-sm text-muted-foreground">Réf: {bien.reference}</p>
-          <p className="font-semibold">{bien.prix_unitaire_ht} € HT</p>
+          <p className="font-semibold">
+            {isNaN(prix) ? '—' : `${prix.toFixed(2)} ${devise}`}
+          </p>
           {bien.date_achat && (
             <p className="text-xs text-muted-foreground">Acheté le {bien.date_achat}</p>
           )}

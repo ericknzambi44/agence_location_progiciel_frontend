@@ -3,20 +3,49 @@ import { useBien, useChangerEtat } from '../hooks/useBiens';
 import { EtatBadge } from '../components/EtatBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Loader2 } from 'lucide-react';
 
 export const BienDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: bien, isLoading, error } = useBien(id!);
-  const { mutate: changerEtat, isPending } = useChangerEtat();
+  const { mutate: changerEtat, isPending, error: mutationError } = useChangerEtat();
 
-  if (isLoading) return <div>Chargement...</div>;
-  if (error || !bien) return <div>Erreur ou bien introuvable.</div>;
+  // Gestion des états de chargement
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground">Chargement du bien...</p>
+      </div>
+    );
+  }
+
+  // Gestion des erreurs
+  if (error || !bien) {
+    return (
+      <div className="text-destructive text-center p-6 border border-destructive/20 rounded-lg bg-destructive/5 max-w-3xl mx-auto mt-10">
+        <p className="font-semibold">Erreur</p>
+        <p className="text-sm">Impossible de charger les détails du bien.</p>
+        <Button variant="outline" onClick={() => navigate('/stock')} className="mt-4">
+          Retour à la liste
+        </Button>
+      </div>
+    );
+  }
 
   const handleChangerEtat = (nouvelEtat: typeof bien.etat) => {
     changerEtat({ id: bien.id, etat: nouvelEtat });
   };
+
+  // Affichage du prix avec devise
+  const prix = typeof bien.prix_unitaire_ht === 'string'
+    ? parseFloat(bien.prix_unitaire_ht)
+    : bien.prix_unitaire_ht;
+  const devise = bien.devise || 'USD';
+
+  // Message d'erreur de mutation (si présent)
+  const mutationErrorMessage = mutationError ? "Erreur lors du changement d'état." : null;
 
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in">
@@ -36,7 +65,9 @@ export const BienDetail = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Prix unitaire HT</p>
-              <p className="font-semibold">{bien.prix_unitaire_ht} €</p>
+              <p className="font-semibold">
+                {isNaN(prix) ? '—' : `${prix.toFixed(2)} ${devise}`}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Date d'achat</p>
@@ -68,6 +99,9 @@ export const BienDetail = () => {
                 )
               )}
             </div>
+            {mutationErrorMessage && (
+              <p className="text-destructive text-sm mt-2">{mutationErrorMessage}</p>
+            )}
           </div>
         </CardContent>
       </Card>

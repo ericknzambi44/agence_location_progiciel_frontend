@@ -9,6 +9,7 @@ export interface Bien {
   prix_unitaire_ht: number;
   date_achat?: string; // format ISO YYYY-MM-DD
   etat: 'disponible' | 'en_maintenance' | 'endommage' | 'archive';
+  devise?: string
 }
 
 /**

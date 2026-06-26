@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Trash2 } from 'lucide-react';
+import { PieceUtilisee } from '../types/intervention.types';
 
 export const InterventionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -66,7 +67,7 @@ export const InterventionDetail = () => {
 
   const bien = biens?.find((b) => b.id === intervention.bien_id);
   const technicien = techniciens?.find((t) => t.id === intervention.technicien_id);
-  const piecesUtilisees = intervention.pieces_utilisees || [];
+  const piecesUtilisees: PieceUtilisee[] = intervention.pieces_utilisees || [];
 
   const handleDemarrer = () => {
     setActionError(null);
