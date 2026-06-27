@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Plus, Loader2, Tag, Package, Layers } from 'lucide-react';
-import { RegleTarificationList } from '../types/tarification.types';
+import { RegleTarificationList as RegleList } from '../types/tarification.types';
 import { RegleTarificationForm } from './RegleTarificationForm';
 
 // Couleurs par type de règle
@@ -20,11 +20,12 @@ const typeLabels: Record<string, string> = {
   forfait: 'Forfait',
 };
 
-export const RegleTarificationLists = () => {
+export const RegleTarificationList = () => {
   const { data: regles, isLoading, error } = useReglesTarification();
   const { mutate: updateRegles, isPending } = useUpdateReglesTarification();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -52,11 +53,15 @@ export const RegleTarificationLists = () => {
     updateRegles(newRegles);
   };
 
-  const handleSave = (newRegles: RegleTarificationList) => {
+  const handleSave = (newRegles: RegleList) => {
+    setSubmitError(null);
     updateRegles(newRegles, {
       onSuccess: () => {
         setShowForm(false);
         setEditingIndex(null);
+      },
+      onError: (err: any) => {
+        setSubmitError(err.response?.data?.error || 'Erreur lors de l\'enregistrement.');
       },
     });
   };
@@ -87,6 +92,8 @@ export const RegleTarificationLists = () => {
           setEditingIndex(null);
         }}
         isEditing={editingIndex !== null}
+        isSaving={isPending}
+        error={submitError}
       />
     );
   }

@@ -6,6 +6,7 @@ import {
   PieceDetachee,
   PieceCreation,
 } from '../types/intervention.types';
+import { RegleMaintenanceList } from '../types/regleMaintenance.types';
 
 // ============================================================
 //  INTERVENTIONS
@@ -137,6 +138,27 @@ export const useRetirerPiece = () => {
     onSuccess: (_, { interventionId }) => {
       queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions', interventionId] });
       queryClient.invalidateQueries({ queryKey: ['maintenance', 'interventions'] });
+    },
+  });
+};
+
+
+
+export const useReglesMaintenance = () => {
+  return useQuery({
+    queryKey: ['maintenance', 'regles'],
+    queryFn: () => maintenanceService.getReglesMaintenance().then(res => res.data),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateReglesMaintenance = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (regles: RegleMaintenanceList) =>
+      maintenanceService.setReglesMaintenance(regles).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'regles'] });
     },
   });
 };

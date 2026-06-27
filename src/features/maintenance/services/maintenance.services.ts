@@ -7,6 +7,7 @@ import {
   Technicien,
   PieceCreation,
 } from '../types/intervention.types';
+import { RegleMaintenanceList } from '../types/regleMaintenance.types';
 
 /**
  * Service de communication avec l'API Maintenance.
@@ -105,4 +106,11 @@ export const maintenanceService = {
   // --- Retirer une pièce d'une intervention ---
 retirerPiece: (interventionId: string, pieceId: string) =>
   apiClient.delete(`/maintenance/interventions/${interventionId}/pieces/${pieceId}/`),
+
+
+
+// --- Règles de tarification maintenance ---
+getReglesMaintenance: () => apiClient.get<RegleMaintenanceList>('/maintenance/regles-maintenance/'),
+setReglesMaintenance: (regles: RegleMaintenanceList) =>
+  apiClient.post<RegleMaintenanceList>('/maintenance/regles-maintenance/', { regles }),
 };

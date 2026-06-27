@@ -14,7 +14,8 @@ const navItems = [
   { path: '/maintenance/pieces', label: 'Pièces', icon: Package },
   { path: '/location/clients', label: 'Clients', icon: Users },
   { path: '/location/contrats', label: 'Contrats', icon: FileText },
-  { path: '/location/tarification', label: 'Tarification', icon: DollarSign },
+  { path: '/location/tarification', label: 'Tarification location', icon: DollarSign },
+  { path: '/maintenance/regles-maintenance', label: 'Tarification maintenance', icon: Settings },
 ];
 
 interface SidebarProps {

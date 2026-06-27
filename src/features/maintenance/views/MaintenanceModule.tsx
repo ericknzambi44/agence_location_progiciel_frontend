@@ -4,6 +4,7 @@ import { InterventionCreate } from './InterventionCreate';
 import { InterventionDetail } from './InterventionDetail';
 import { PieceList } from './PieceList';
 import { PieceCreate } from './PieceCreate';
+import { RegleMaintenancePage } from './RegleMaintenancePage';
 
 export const MaintenanceModule = () => {
   return (
@@ -13,6 +14,7 @@ export const MaintenanceModule = () => {
       <Route path=":id" element={<InterventionDetail />} />
       <Route path="pieces" element={<PieceList />} />
       <Route path="pieces/nouvelle" element={<PieceCreate />} />
+      <Route path="regles-maintenance" element={<RegleMaintenancePage />} />
     </Routes>
   );
 };

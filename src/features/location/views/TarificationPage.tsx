@@ -1,4 +1,5 @@
-import { RegleTarificationLists } from '../components/RegleTarificationList';
+import { RegleTarificationList } from "../components/RegleTarificationList";
+
 
 export const TarificationPage = () => {
   return (
@@ -7,7 +8,7 @@ export const TarificationPage = () => {
       <p className="text-muted-foreground">
         Gérez les règles de tarification (remises, forfaits, majorations) pour les locations.
       </p>
-      <RegleTarificationLists />
+      <RegleTarificationList />
     </div>
   );
 };

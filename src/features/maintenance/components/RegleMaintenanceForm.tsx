@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, AlertCircle, Tag, Calendar, Package, Layers, Clock } from 'lucide-react';
-import { RegleTarification, TypeRegle } from '../types/tarification.types';
+import { Loader2, AlertCircle, Settings, Tag, Clock, Calendar } from 'lucide-react';
+import { RegleMaintenance, TypeRegleMaintenance } from '../types/regleMaintenance.types';
 
 // Schéma de validation
 const schema = z.object({
@@ -17,8 +17,6 @@ const schema = z.object({
   valeur: z.number().min(0, 'La valeur doit être positive'),
   duree_min: z.number().int().min(0, 'Durée minimale >= 0'),
   duree_max: z.number().int().nullable().optional(),
-  bien_id: z.string().nullable().optional(),
-  categorie_id: z.string().nullable().optional(),
   periode_debut: z.string().nullable().optional(),
   periode_fin: z.string().nullable().optional(),
   description: z.string().optional(),
@@ -27,24 +25,24 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface RegleTarificationFormProps {
-  initialData?: RegleTarification;
-  onSave: (data: RegleTarification) => void;
+interface RegleMaintenanceFormProps {
+  initialData?: RegleMaintenance;
+  onSave: (data: RegleMaintenance) => void;
   onCancel: () => void;
   isEditing: boolean;
   isSaving?: boolean;
   error?: string | null;
 }
 
-export const RegleTarificationForm = ({
+export const RegleMaintenanceForm = ({
   initialData,
   onSave,
   onCancel,
   isEditing,
   isSaving = false,
   error: submitError = null,
-}: RegleTarificationFormProps) => {
-  const [active, setActive] = useState(initialData?.active ?? true);
+}: RegleMaintenanceFormProps) => {
+  const [active, setActive] = useState(initialData?.active !== false);
 
   const {
     register,
@@ -60,8 +58,6 @@ export const RegleTarificationForm = ({
       valeur: 0,
       duree_min: 0,
       duree_max: null,
-      bien_id: null,
-      categorie_id: null,
       periode_debut: null,
       periode_fin: null,
       description: '',
@@ -76,8 +72,6 @@ export const RegleTarificationForm = ({
         valeur: initialData.valeur,
         duree_min: initialData.duree_min,
         duree_max: initialData.duree_max ?? null,
-        bien_id: initialData.bien_id ?? null,
-        categorie_id: initialData.categorie_id ?? null,
         periode_debut: initialData.periode_debut ?? null,
         periode_fin: initialData.periode_fin ?? null,
         description: initialData.description ?? '',
@@ -90,13 +84,11 @@ export const RegleTarificationForm = ({
   const currentType = watch('type');
 
   const onSubmit = (data: FormData) => {
-    const regle: RegleTarification = {
+    const regle: RegleMaintenance = {
       type: data.type,
       valeur: data.valeur,
       duree_min: data.duree_min,
       duree_max: data.duree_max ?? undefined,
-      bien_id: data.bien_id ?? undefined,
-      categorie_id: data.categorie_id ?? undefined,
       periode_debut: data.periode_debut ?? undefined,
       periode_fin: data.periode_fin ?? undefined,
       description: data.description ?? undefined,
@@ -110,14 +102,14 @@ export const RegleTarificationForm = ({
       <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Tag className="h-6 w-6 text-primary" />
+            <Settings className="h-6 w-6 text-primary" />
           </div>
           <div>
             <CardTitle className="text-2xl">{isEditing ? 'Modifier la règle' : 'Nouvelle règle'}</CardTitle>
             <p className="text-sm text-muted-foreground">
               {isEditing
-                ? 'Modifiez les paramètres de la règle de tarification.'
-                : 'Créez une nouvelle règle pour moduler les prix des locations.'}
+                ? 'Modifiez les paramètres de la règle de tarification maintenance.'
+                : 'Créez une nouvelle règle pour moduler les coûts des interventions.'}
             </p>
           </div>
         </div>
@@ -131,7 +123,7 @@ export const RegleTarificationForm = ({
               Type de règle *
             </Label>
             <Select
-              onValueChange={(val) => setValue('type', val as TypeRegle)}
+              onValueChange={(val) => setValue('type', val as TypeRegleMaintenance)}
               value={currentType}
             >
               <SelectTrigger id="type" className={errors.type ? 'border-destructive' : ''}>
@@ -177,7 +169,7 @@ export const RegleTarificationForm = ({
             <div className="space-y-2">
               <Label htmlFor="duree_min" className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                Durée minimale (jours) *
+                Durée minimale (heures) *
               </Label>
               <Input
                 id="duree_min"
@@ -195,7 +187,7 @@ export const RegleTarificationForm = ({
             <div className="space-y-2">
               <Label htmlFor="duree_max" className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                Durée maximale (jours)
+                Durée maximale (heures)
               </Label>
               <Input
                 id="duree_max"
@@ -209,34 +201,6 @@ export const RegleTarificationForm = ({
                   {errors.duree_max.message}
                 </p>
               )}
-            </div>
-          </div>
-
-          {/* Ciblage */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="bien_id" className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                ID du bien (spécifique)
-              </Label>
-              <Input
-                id="bien_id"
-                className={errors.bien_id ? 'border-destructive' : ''}
-                {...register('bien_id')}
-                placeholder="Ex: 123e4567-..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="categorie_id" className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-muted-foreground" />
-                ID de la catégorie
-              </Label>
-              <Input
-                id="categorie_id"
-                className={errors.categorie_id ? 'border-destructive' : ''}
-                {...register('categorie_id')}
-                placeholder="Ex: 123e4567-..."
-              />
             </div>
           </div>
 
@@ -277,7 +241,7 @@ export const RegleTarificationForm = ({
             <Input
               id="description"
               {...register('description')}
-              placeholder="Ex: Remise pour locations longue durée"
+              placeholder="Ex: Remise pour interventions longues"
             />
           </div>
 
