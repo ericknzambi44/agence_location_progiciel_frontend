@@ -17,8 +17,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Loader2, Trash2, Calculator, DollarSign, Clock, User, Package, Wrench } from 'lucide-react';
 import { PieceUtilisee } from '../types/intervention.types';
+
+/**
+ * Convertit une valeur en nombre de manière sécurisée.
+ */
+const toNumber = (value: any): number => {
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return typeof value === 'number' && !isNaN(value) ? value : 0;
+};
 
 export const InterventionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +38,7 @@ export const InterventionDetail = () => {
   const [selectedPiece, setSelectedPiece] = useState('');
   const [quantite, setQuantite] = useState(1);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [calculError, setCalculError] = useState<string | null>(null);
 
   const {
     data: intervention,
@@ -38,7 +50,7 @@ export const InterventionDetail = () => {
   const { data: biens, isLoading: isLoadingBiens } = useBiens();
   const { data: techniciens, isLoading: isLoadingTechniciens } = useTechniciens();
   const { data: pieces, isLoading: isLoadingPieces } = usePieces();
-  const { data: cout, refetch: refetchCout } = useCalculerCout(id!);
+  const { data: cout, refetch: refetchCout, isFetching: isCalculating } = useCalculerCout(id!);
 
   const { mutate: demarrer, isPending: isDemarrage } = useDemarrerIntervention();
   const { mutate: ajouterPiece, isPending: isAdding } = useAjouterPiece();
@@ -68,6 +80,23 @@ export const InterventionDetail = () => {
   const bien = biens?.find((b) => b.id === intervention.bien_id);
   const technicien = techniciens?.find((t) => t.id === intervention.technicien_id);
   const piecesUtilisees: PieceUtilisee[] = intervention.pieces_utilisees || [];
+
+  // Calcul du coût de base (main-d'œuvre + pièces) à partir des données de l'intervention
+  const calculerCoutBase = () => {
+    if (!intervention.date_debut || !intervention.date_fin) return null;
+    const dureeHeures = (new Date(intervention.date_fin).getTime() - new Date(intervention.date_debut).getTime()) / (1000 * 3600);
+    if (dureeHeures <= 0 || !technicien) return null;
+    const mainOeuvre = dureeHeures * toNumber(technicien.cout_horaire);
+    const piecesCout = piecesUtilisees.reduce((acc, p) => acc + (toNumber(p.prix_unitaire) * p.quantite), 0);
+    return { mainOeuvre, piecesCout, total: mainOeuvre + piecesCout };
+  };
+
+  const coutBase = calculerCoutBase();
+  const coutTotal = cout !== undefined ? toNumber(cout) : undefined;
+
+  // Déterminer si une remise a été appliquée (si le coût total est différent du coût de base)
+  const hasRemise = coutBase && coutTotal !== undefined && Math.abs(coutBase.total - coutTotal) > 0.01;
+  const remiseMontant = hasRemise && coutBase ? coutBase.total - coutTotal : 0;
 
   const handleDemarrer = () => {
     setActionError(null);
@@ -119,8 +148,10 @@ export const InterventionDetail = () => {
   };
 
   const handleCalculerCout = () => {
-    setActionError(null);
-    refetchCout();
+    setCalculError(null);
+    refetchCout().catch((err) => {
+      setCalculError(err.response?.data?.error || 'Erreur lors du calcul.');
+    });
   };
 
   const canAddPieces = intervention.statut === 'planifiee' || intervention.statut === 'en_cours';
@@ -144,16 +175,20 @@ export const InterventionDetail = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Informations */}
+          {/* Informations générales */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
             <div>
-              <p className="text-sm text-muted-foreground">Bien</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Package className="h-4 w-4" /> Bien
+              </p>
               <p className="font-semibold">
                 {isDataLoading ? 'Chargement...' : bien?.nom || intervention.bien_id?.slice(0, 8) || 'Inconnu'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Technicien</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <User className="h-4 w-4" /> Technicien
+              </p>
               <p className="font-semibold">
                 {isDataLoading
                   ? 'Chargement...'
@@ -163,20 +198,57 @@ export const InterventionDetail = () => {
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Début</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Clock className="h-4 w-4" /> Début
+              </p>
               <p>{new Date(intervention.date_debut).toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Fin</p>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <Clock className="h-4 w-4" /> Fin
+              </p>
               <p>{new Date(intervention.date_fin).toLocaleString()}</p>
             </div>
-            {cout !== undefined && (
-              <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Coût total</p>
-                <p className="text-xl font-bold text-primary">{cout} €</p>
-              </div>
-            )}
           </div>
+
+          {/* Détail du coût */}
+          {(coutBase || coutTotal !== undefined) && (
+            <div className="pt-4 border-t">
+              <h3 className="font-medium mb-3">Détail du coût</h3>
+              <div className="space-y-2 text-sm bg-card p-4 rounded-lg border">
+                {coutBase && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Main-d'œuvre ({coutBase.mainOeuvre.toFixed(2)} €/h)</span>
+                      <span>{coutBase.mainOeuvre.toFixed(2)} €</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pièces</span>
+                      <span>{coutBase.piecesCout.toFixed(2)} €</span>
+                    </div>
+                    <div className="flex justify-between font-medium border-t pt-1">
+                      <span>Sous-total</span>
+                      <span>{coutBase.total.toFixed(2)} €</span>
+                    </div>
+                  </>
+                )}
+                {coutTotal !== undefined && (
+                  <>
+                    {hasRemise && (
+                      <div className="flex justify-between text-green-600 dark:text-green-400">
+                        <span>Remise appliquée</span>
+                        <span>- {remiseMontant.toFixed(2)} €</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-primary border-t pt-1">
+                      <span>Total</span>
+                      <span>{coutTotal.toFixed(2)} €</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Liste des pièces utilisées */}
           <div className="pt-4 border-t">
@@ -222,10 +294,20 @@ export const InterventionDetail = () => {
               )}
 
               {(intervention.statut === 'terminee' || intervention.statut === 'en_cours') && (
-                <Button onClick={handleCalculerCout} variant="secondary">
-                  Calculer le coût
+                <Button
+                  onClick={handleCalculerCout}
+                  disabled={isCalculating}
+                  variant="secondary"
+                  className="gap-2"
+                >
+                  {isCalculating ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Calcul...</>
+                  ) : (
+                    <><Calculator className="h-4 w-4" /> Calculer le coût</>
+                  )}
                 </Button>
               )}
+              {calculError && <p className="text-destructive text-sm">{calculError}</p>}
             </div>
 
             {/* Ajout de pièce */}

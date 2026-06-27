@@ -113,4 +113,9 @@ retirerPiece: (interventionId: string, pieceId: string) =>
 getReglesMaintenance: () => apiClient.get<RegleMaintenanceList>('/maintenance/regles-maintenance/'),
 setReglesMaintenance: (regles: RegleMaintenanceList) =>
   apiClient.post<RegleMaintenanceList>('/maintenance/regles-maintenance/', { regles }),
+
+
+// ------ technicien creer et get
+getTechniciensList: () => apiClient.get<Technicien[]>('/maintenance/techniciens/'),
+createTechnicien: (data: Omit<Technicien, 'id'>) => apiClient.post<Technicien>('/maintenance/techniciens/', data),
 };

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, AlertCircle, Settings, Tag, Clock, Calendar } from 'lucide-react';
+import { Loader2, AlertCircle, Settings, Tag, Clock, Calendar, Info } from 'lucide-react';
 import { RegleMaintenance, TypeRegleMaintenance } from '../types/regleMaintenance.types';
 
 // Schéma de validation
@@ -116,6 +116,24 @@ export const RegleMaintenanceForm = ({
       </CardHeader>
       <CardContent className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Encart d'explication */}
+          <div className="bg-muted/50 border rounded-lg p-4 flex items-start gap-3">
+            <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div className="text-sm space-y-1">
+              <p className="font-medium">À quoi sert cette règle ?</p>
+              <p className="text-muted-foreground">
+                Une règle de tarification modifie le coût final d'une intervention.
+                Elle s'applique <strong>automatiquement</strong> lors de la terminaison de l'intervention,
+                si les conditions (durée, période) sont remplies.
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground text-xs">
+                <li><strong>Remise</strong> : réduit le coût total d'un pourcentage.</li>
+                <li><strong>Majoration</strong> : augmente le coût total d'un pourcentage.</li>
+                <li><strong>Forfait</strong> : remplace le coût total par un montant fixe (prioritaire).</li>
+              </ul>
+            </div>
+          </div>
+
           {/* Type de règle */}
           <div className="space-y-2">
             <Label htmlFor="type" className="flex items-center gap-2">
@@ -135,6 +153,9 @@ export const RegleMaintenanceForm = ({
                 <SelectItem value="forfait">Forfait (€)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              Choisissez le type d'impact : <strong>Remise</strong> (réduction), <strong>Majoration</strong> (augmentation) ou <strong>Forfait</strong> (montant fixe).
+            </p>
             {errors.type && (
               <p className="text-destructive text-sm flex items-center gap-1">
                 <AlertCircle className="h-3.5 w-3.5" />
@@ -156,6 +177,10 @@ export const RegleMaintenanceForm = ({
               className={errors.valeur ? 'border-destructive' : ''}
               {...register('valeur', { valueAsNumber: true })}
             />
+            <p className="text-xs text-muted-foreground">
+              Pour une <strong>remise</strong> ou <strong>majoration</strong> : saisissez un pourcentage (ex: 10 pour 10%).
+              Pour un <strong>forfait</strong> : saisissez un montant en euros (ex: 100).
+            </p>
             {errors.valeur && (
               <p className="text-destructive text-sm flex items-center gap-1">
                 <AlertCircle className="h-3.5 w-3.5" />
@@ -177,6 +202,10 @@ export const RegleMaintenanceForm = ({
                 className={errors.duree_min ? 'border-destructive' : ''}
                 {...register('duree_min', { valueAsNumber: true })}
               />
+              <p className="text-xs text-muted-foreground">
+                La règle s'applique si la durée de l'intervention est <strong>≥</strong> à cette valeur.
+                Exemple : 2 pour s'appliquer à partir de 2 heures.
+              </p>
               {errors.duree_min && (
                 <p className="text-destructive text-sm flex items-center gap-1">
                   <AlertCircle className="h-3.5 w-3.5" />
@@ -195,6 +224,10 @@ export const RegleMaintenanceForm = ({
                 className={errors.duree_max ? 'border-destructive' : ''}
                 {...register('duree_max', { valueAsNumber: true })}
               />
+              <p className="text-xs text-muted-foreground">
+                La règle s'applique si la durée est <strong>≤</strong> à cette valeur. 
+                Laissez vide pour <strong>illimité</strong>.
+              </p>
               {errors.duree_max && (
                 <p className="text-destructive text-sm flex items-center gap-1">
                   <AlertCircle className="h-3.5 w-3.5" />
@@ -209,7 +242,7 @@ export const RegleMaintenanceForm = ({
             <div className="space-y-2">
               <Label htmlFor="periode_debut" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                Période début
+                Période début (optionnel)
               </Label>
               <Input
                 id="periode_debut"
@@ -217,11 +250,14 @@ export const RegleMaintenanceForm = ({
                 className={errors.periode_debut ? 'border-destructive' : ''}
                 {...register('periode_debut')}
               />
+              <p className="text-xs text-muted-foreground">
+                La règle s'applique à partir de cette date. Laissez vide pour <strong>dès maintenant</strong>.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="periode_fin" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                Période fin
+                Période fin (optionnel)
               </Label>
               <Input
                 id="periode_fin"
@@ -229,6 +265,9 @@ export const RegleMaintenanceForm = ({
                 className={errors.periode_fin ? 'border-destructive' : ''}
                 {...register('periode_fin')}
               />
+              <p className="text-xs text-muted-foreground">
+                La règle s'applique jusqu'à cette date. Laissez vide pour <strong>illimitée</strong>.
+              </p>
             </div>
           </div>
 
@@ -236,13 +275,16 @@ export const RegleMaintenanceForm = ({
           <div className="space-y-2">
             <Label htmlFor="description" className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-muted-foreground" />
-              Description
+              Description (optionnel)
             </Label>
             <Input
               id="description"
               {...register('description')}
               placeholder="Ex: Remise pour interventions longues"
             />
+            <p className="text-xs text-muted-foreground">
+              Une description courte pour identifier la règle (ex: "Promotion été").
+            </p>
           </div>
 
           {/* Actif */}
@@ -254,6 +296,9 @@ export const RegleMaintenanceForm = ({
             />
             <Label htmlFor="active" className="cursor-pointer">Règle active</Label>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Une règle <strong>active</strong> est appliquée automatiquement. Désactivez-la pour la suspendre sans la supprimer.
+          </p>
 
           {/* Erreur globale */}
           {submitError && (

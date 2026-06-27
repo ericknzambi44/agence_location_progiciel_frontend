@@ -5,6 +5,7 @@ import {
   AjoutPieceData,
   PieceDetachee,
   PieceCreation,
+  Technicien,
 } from '../types/intervention.types';
 import { RegleMaintenanceList } from '../types/regleMaintenance.types';
 
@@ -78,16 +79,7 @@ export const useCalculerCout = (id: string) => {
   });
 };
 
-// ============================================================
-//  TECHNICIENS
-// ============================================================
 
-export const useTechniciens = () => {
-  return useQuery({
-    queryKey: ['maintenance', 'techniciens'],
-    queryFn: () => maintenanceService.getTechniciens().then(res => res.data),
-  });
-};
 
 // ============================================================
 //  PIÈCES DÉTACHÉES
@@ -159,6 +151,27 @@ export const useUpdateReglesMaintenance = () => {
       maintenanceService.setReglesMaintenance(regles).then(res => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance', 'regles'] });
+    },
+  });
+};
+
+
+
+export const useTechniciens = () => {
+  return useQuery({
+    queryKey: ['maintenance', 'techniciens'],
+    queryFn: () => maintenanceService.getTechniciensList().then(res => res.data),
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useCreerTechnicien = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Omit<Technicien, 'id'>) =>
+      maintenanceService.createTechnicien(data).then(res => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance', 'techniciens'] });
     },
   });
 };
