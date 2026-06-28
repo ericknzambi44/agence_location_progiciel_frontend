@@ -12,6 +12,7 @@ import {
   UserCog,
   Boxes,
   ClipboardList,
+  BarChart3,
 } from 'lucide-react';
 
 const navItems = [
@@ -32,6 +33,7 @@ const navItems = [
   { type: 'divider' as const },
   { type: 'link' as const, path: '/administration', label: 'Agences', icon: Building2, color: 'text-slate-500' },
   { type: 'link' as const, path: '/administration/modules', label: 'Modules', icon: Settings, color: 'text-slate-400' },
+  { type: 'link' as const, path: '/statistiques', label: 'Statistiques', icon: BarChart3, color: 'text-indigo-500' }
 ];
 
 interface SidebarProps {

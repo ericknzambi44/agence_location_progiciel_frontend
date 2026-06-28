@@ -10,6 +10,7 @@ import { AdministrationModule } from '@/features/administration/views/Administra
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { MainLayout } from '@/components/layouts/ MainLayout';
 import { LocationModule } from '@/features/location/views/LocationModule';
+import { StatistiquesModule } from '@/features/statistiques/views/StatistiquesModule';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'maintenance/*', element: <MaintenanceModule /> },
       { path: 'administration/*', element: <AdministrationModule /> },
       { path: 'location/*', element: <LocationModule /> },
+      { path: 'statistiques/*', element: <StatistiquesModule /> },
     ],
   },
 ]);
